@@ -20,6 +20,7 @@ import org.janusgraph.diskstorage.Backend;
 import org.janusgraph.diskstorage.BackendException;
 import org.janusgraph.diskstorage.configuration.ConfigOption;
 import org.janusgraph.graphdb.configuration.GraphDatabaseConfiguration;
+import org.janusgraph.testutil.FlakyTest;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,19 +113,14 @@ public class BerkeleyGraphTest extends JanusGraphTest {
         //Do nothing TODO: Figure out why this is failing in BerkeleyDB!!
     }
 
-    @Test
+    @FlakyTest
     public void testIDBlockAllocationTimeout() throws BackendException {
-        config.set("ids.authority.wait-time", Duration.of(0L, ChronoUnit.NANOS));
+        config.set("ids.authority.wait-time", Duration.of(0L, ChronoUnit.MILLIS));
         config.set("ids.renew-timeout", Duration.of(1L, ChronoUnit.MILLIS));
         close();
         JanusGraphFactory.drop(graph);
         open(config);
-        try {
-            graph.addVertex();
-            fail();
-        } catch (JanusGraphException ignored) {
-
-        }
+        assertThrows(JanusGraphException.class, () -> graph.addVertex());
 
         assertTrue(graph.isOpen());
 
